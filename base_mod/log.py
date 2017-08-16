@@ -20,29 +20,36 @@ class LogModule:
     def __init__(self):
         pass
 
-    def set_logger(self):
+    @staticmethod
+    def set_logger():
 
         mutex = threading.Lock()
         mutex.acquire()
 
-        logger = logging.getLogger(log_name)
-        logger.setLevel(logging.DEBUG)
+        set_logger = logging.getLogger(log_name)
+        set_logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter(log_format, date_fmt)
 
         # info日志格式
+        info_filter = logging.Filter()
+        info_filter.filter = lambda record: record.levelno == logging.INFO
         info_fh = logging.FileHandler(info_file)
-        info_fh.setLevel(logging.DEBUG)
+        info_fh.setLevel(logging.INFO)
         info_fh.setFormatter(formatter)
+        info_fh.addFilter(info_filter)
 
         # error日志格式
+        error_filter = logging.Filter()
+        error_filter.filter = lambda record: record.levelno > logging.INFO
         error_fh = logging.FileHandler(error_file)
         error_fh.setLevel(logging.WARN)
         error_fh.setFormatter(formatter)
+        error_fh.addFilter(error_filter)
 
-        logger.addHandler(info_fh)
-        logger.addHandler(error_fh)
+        set_logger.addHandler(info_fh)
+        set_logger.addHandler(error_fh)
 
         mutex.release()
-        return logger
+        return set_logger
 
 logger = LogModule().set_logger()
